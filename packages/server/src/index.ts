@@ -1,72 +1,45 @@
 import { Elysia, t } from "elysia";
-import { randomUUID } from "crypto";
+import db from "./db";
+import auth from "./auth";
+import jwt from "@elysiajs/jwt";
+import bearer from "@elysiajs/bearer";
+import swagger from "@elysiajs/swagger";
 
-const PORT = 3000;
+// register base modules
+const appBase = new Elysia()
+  .use(
+    swagger({
+      documentation: {
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "JWT",
+              description: "Enter the token with the 'Bearer ' prefix",
+            },
+          },
+        },
+        security: [{ bearerAuth: [] }],
+      },
+    })
+  )
+  .use(
+    jwt({
+      name: "jwt",
+      secret: Bun.env.JWT_SECRET || "secret", // TODO: type-check env
+    })
+  )
+  .use(bearer())
+  .use(db);
 
-const app = new Elysia();
+export type ElysiaBase = typeof appBase;
 
-app
-  .state("users", {} as Record<string, string[]>)
-  .ws("/ws", {
-    body: t.String(),
-    cookie: t.Cookie({
-      clientId: t.Cookie({}),
-    }),
-    query: t.Object({
-      roomId: t.String(),
-    }),
+// register plugins
+const appWithPlugins = appBase.use(auth);
 
-    beforeHandle: ({ store, cookie, query }) => {
-      const uid = randomUUID();
-      console.log("beforeHandle");
-      store.users[uid] = [query.roomId];
-      cookie.clientId.set({
-        httpOnly: true,
-        value: uid,
-      });
-    },
+export type ElysiaPlugins = typeof appWithPlugins;
 
-    open: (ws) => {
-      // not sure if 'set' is the best place to get cookies back from
-      // is there any chance it could be in ws.data.cookie instead? so far it is in set
-
-      const clientId = ws.data.set.cookie?.clientId.value;
-      if (!clientId) {
-        console.log("cookie not found");
-        ws.close();
-        return;
-      }
-      ws.data.store.users[clientId].forEach((room) => ws.subscribe(room));
-      console.log(`user id { ${clientId} } has connected`);
-    },
-
-    message: (ws, msg) => {
-      const clientId = ws.data.set.cookie?.clientId.value;
-      console.log(`msg from { ${clientId} }: ${msg}`);
-      if (!clientId) {
-        console.log("cookie not found");
-        ws.close();
-        return;
-      }
-      ws.data.store.users[clientId].forEach((room) => ws.publish(room, msg));
-    },
-
-    close: (ws) => {
-      const clientId = ws.data.set.cookie?.clientId.value;
-      if (!clientId) {
-        // orphaned user entries in the store?
-        return;
-      }
-
-      // is this needed?
-      ws.data.store.users[clientId].forEach((room) => ws.unsubscribe(room));
-    },
-
-    error: (ws) => {
-      console.log(ws.error.message);
-    },
-  })
-
-  .listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+appWithPlugins.listen(3000, (srv) => {
+  console.log(`🔷 Elysia is listening on ${srv.hostname}:${srv.port}`);
+});

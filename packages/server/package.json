@@ -6,6 +6,10 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/bearer": "^0.7.0",
+    "@elysiajs/jwt": "^0.7.0",
+    "@elysiajs/swagger": "^0.7.3",
+    "drizzle-orm": "^0.28.6",
     "elysia": "latest"
   },
   "devDependencies": {
