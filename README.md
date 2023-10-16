@@ -1,15 +1,26 @@
 # chat-app
 
+Very much still a work in progress.
+
 To install dependencies:
 
 ```bash
 bun install
 ```
 
-To run:
+To run locally:
 
 ```bash
-bun run index.ts
+bun dev
 ```
 
-This project was created using `bun init` in bun v1.0.4. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+This is a Typescript monorepo containing two packages:
+
+## server
+
+A chat app built with [Elysia](https://elysiajs.com/), a type-safe express-like web framework for [Bun](https://bun.sh/)
+using [drizzle](https://orm.drizzle.team) to store and query data from a SQLite database.
+
+## client
+
+[ TBD ] React app built with [Vite](https://vitejs.dev/).
