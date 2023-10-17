@@ -1,33 +1,35 @@
 import { ElysiaBase } from ".";
-import { t } from "elysia";
+import { t, type Context } from "elysia";
 import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
 
 export default (app: ElysiaBase) => {
   return app
-    .derive(async ({ bearer, jwt }) => {
-      // check headers for bearer token (jwt)
-      const token = await jwt.verify(bearer);
+    .derive(async ({ jwt }) => {
+      return {
+        authFromToken: async function (token?: string) {
+          const decoded = await jwt.verify(token);
 
-      if (token) {
-        if (Object.hasOwn(token, "name") && Object.hasOwn(token, "id")) {
-          // TODO: extract token type and create a type guard
-          return {
-            auth: {
+          if (decoded) {
+            return {
               isAuthed: true as true,
-              user: { name: token.name, id: token.id },
-            },
-          };
-        }
-      }
+              user: { name: decoded.name, id: decoded.id },
+            };
+          }
 
-      return { auth: { isAuthed: false as false } };
+          return { isAuthed: false as false };
+        },
+      };
+    })
+    .derive(async ({ bearer, authFromToken }) => {
+      // automaically authenticate from bearer token (if exists)
+      return { auth: await authFromToken(bearer) };
     })
     .group("/auth", (app) => {
       return app
         .get(
           "/me",
-          ({ auth, store }) => {
+          ({ auth }) => {
             // return user info here
             return {
               name: auth.user?.name as string,
@@ -41,7 +43,7 @@ export default (app: ElysiaBase) => {
                 return;
               }
             },
-          }
+          },
         )
         .guard(
           {
@@ -77,7 +79,7 @@ export default (app: ElysiaBase) => {
                   });
 
                   set.status = 201;
-                }
+                },
               )
               .post(
                 "/login",
@@ -97,7 +99,7 @@ export default (app: ElysiaBase) => {
 
                   const isMatch = await Bun.password.verify(
                     password,
-                    user?.passwordHash || ""
+                    user?.passwordHash || "",
                   );
 
                   if (!user || !isMatch) {
@@ -113,27 +115,55 @@ export default (app: ElysiaBase) => {
 
                   set.status = 200;
                   return { token };
-                }
+                },
               )
-              .delete("/me", async ({ auth, set, store: { db } }) => {
-                if (!auth.isAuthed) {
-                  return (set.status = 401);
-                }
+              .delete(
+                "/me",
+                async ({ body: { password }, auth, set, store: { db } }) => {
+                  if (!auth.isAuthed) {
+                    return (set.status = 401);
+                  }
 
-                // TODO: require password to delete account
+                  const user = (
+                    await db
+                      .select()
+                      .from(users)
+                      .where(eq(users.id, auth.user.id))
+                      .limit(1)
+                  )[0];
 
-                const deleted = (
-                  await db
-                    .delete(users)
-                    .where(eq(users.id, auth.user.id))
-                    .returning()
-                )[0];
-                if (deleted) {
-                  set.status = 200;
-                  return;
-                }
-              });
-          }
+                  if (!user) {
+                    set.status = 404;
+                    return;
+                  }
+
+                  // verify password
+
+                  const isMatch = await Bun.password.verify(
+                    password,
+                    user.passwordHash,
+                  );
+
+                  if (!isMatch) {
+                    set.status = 401;
+                    return;
+                  }
+
+                  const deleted = (
+                    await db
+                      .delete(users)
+                      .where(eq(users.id, user.id))
+                      .returning()
+                  )[0];
+
+                  if (deleted) {
+                    set.status = 200;
+                    return;
+                  }
+                },
+                { body: t.Object({ password: t.String() }) },
+              );
+          },
         );
     });
 };
