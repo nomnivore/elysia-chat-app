@@ -5,6 +5,7 @@ import jwt from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
 import swagger from "@elysiajs/swagger";
 import chatrooms from "./chatrooms";
+import { logger } from "@grotto/logysia";
 
 // register base modules
 const appBase = new Elysia()
@@ -23,7 +24,7 @@ const appBase = new Elysia()
         },
         security: [{ bearerAuth: [] }],
       },
-    })
+    }),
   )
   .use(
     jwt({
@@ -34,10 +35,11 @@ const appBase = new Elysia()
         id: t.String(),
       }),
       exp: "1w",
-    })
+    }),
   )
   .use(bearer())
-  .use(db);
+  .use(db)
+  .use(logger());
 
 export type ElysiaBase = typeof appBase;
 
