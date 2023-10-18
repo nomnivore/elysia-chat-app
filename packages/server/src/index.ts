@@ -38,7 +38,7 @@ const appBase = new Elysia()
     }),
   )
   .use(bearer())
-  .use(db)
+  .use(db())
   .use(logger());
 
 export type ElysiaBase = typeof appBase;
