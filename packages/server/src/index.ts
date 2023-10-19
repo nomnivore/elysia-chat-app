@@ -1,14 +1,14 @@
 import { Elysia, t } from "elysia";
-import db from "./db";
 import auth from "./auth";
-import jwt from "@elysiajs/jwt";
-import bearer from "@elysiajs/bearer";
 import swagger from "@elysiajs/swagger";
-import chatrooms from "./chatrooms";
+import chatrooms from "./routes/chatrooms";
 import { logger } from "@grotto/logysia";
+import cors from "@elysiajs/cors";
+import account from "./routes/account";
 
 // register base modules
-const appBase = new Elysia()
+const app = new Elysia()
+  .use(cors())
   .use(
     swagger({
       documentation: {
@@ -26,30 +26,11 @@ const appBase = new Elysia()
       },
     }),
   )
-  .use(
-    jwt({
-      name: "jwt",
-      secret: Bun.env.JWT_SECRET || "secret", // TODO: type-check env
-      schema: t.Object({
-        name: t.String(),
-        id: t.String(),
-      }),
-      exp: "1w",
-    }),
-  )
-  .use(bearer())
-  .use(db())
-  .use(logger());
-
-export type ElysiaBase = typeof appBase;
-
-// register plugins
-const appWithPlugins = appBase.use(auth);
-
-export type ElysiaPlugins = typeof appWithPlugins;
-
-const app = appWithPlugins
-  .use(chatrooms)
+  .use(logger())
+  .use(auth())
+  // routes
+  .use(account())
+  .use(chatrooms())
   .onError((err) => {
     console.log(err);
   })

@@ -5,8 +5,7 @@ import * as schema from "./schema";
 
 export const db = () => {
   const sqlite = new Database("local.db");
-  return () =>
-    new Elysia({ name: "db" }).state("db", drizzle(sqlite, { schema }));
+  return new Elysia({ name: "db" }).state("db", drizzle(sqlite, { schema }));
 };
 
 export default db;
