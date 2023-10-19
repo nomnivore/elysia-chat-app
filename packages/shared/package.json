@@ -1,0 +1,16 @@
+{
+  "name": "shared",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "devDependencies": {
+    "bun-types": "latest",
+    "elysia": "^0.7.17"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@elysiajs/eden": "^0.7.4",
+    "server": "workspace:*"
+  }
+}
