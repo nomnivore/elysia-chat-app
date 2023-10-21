@@ -15,7 +15,6 @@ export default function () {
           async ({ auth, set }) => {
             if (!auth.isAuthed) {
               set.status = 401;
-              return { message: "Unauthorized" };
             }
             // return user info here
             if (auth.isAuthed)
