@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useEden } from "./useEden";
+import { edenApi } from "./useEden";
 
 export type AuthUser = {
   id: string;
@@ -13,12 +13,12 @@ export type AuthStore = {
   isAuthed: () => boolean;
 
   // mutations
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
 };
 
 export const useAuthStore = create<AuthStore>((set, get) => {
-  const { api } = useEden();
+  const { api } = edenApi();
 
   return {
     token: null,
@@ -26,6 +26,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
     isAuthed: () => !!get().token,
 
+    // TODO: convert to async/await
     login: async (token) => {
       // fetch user info from api
       const { data: user } = await api.auth.me.get({

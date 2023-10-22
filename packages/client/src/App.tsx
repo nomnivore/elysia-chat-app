@@ -7,6 +7,7 @@ import {
 import Home from "./pages/home";
 import Register from "./pages/register";
 import { Layout } from "./pages/Layout";
+import Login from "./pages/login";
 
 const root = new RootRoute({
   component: Layout,
@@ -21,8 +22,13 @@ const registerRoute = new Route({
   path: "/register",
   component: Register,
 });
+const loginRoute = new Route({
+  getParentRoute: () => root,
+  path: "/login",
+  component: Login,
+});
 
-const routeTree = root.addChildren([indexRoute, registerRoute]);
+const routeTree = root.addChildren([indexRoute, registerRoute, loginRoute]);
 
 const router = new Router({ routeTree });
 
