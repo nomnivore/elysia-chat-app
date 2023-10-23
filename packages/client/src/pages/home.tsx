@@ -14,7 +14,7 @@ export function Home() {
   // if not signed in, redirect to /login
   useEffect(() => {
     if (!isAuthed()) navigate({ to: "/login", replace: true });
-  }, [isAuthed, navigate]);
+  }, [isAuthed, navigate, user]);
 
   return (
     <div className="px-4">
