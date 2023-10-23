@@ -1,30 +1,31 @@
 import { useAuthStore } from "@/lib/authStore";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem } from "./ui/form";
 import { useChatStore } from "@/lib/chatStore";
-import { useEffect } from "react";
+import { HTMLAttributes, forwardRef, useEffect, useRef } from "react";
+import { ScrollArea } from "./ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 const messageSchema = z.object({
   message: z.string(),
 });
 
-export const ChatBox = () => {
+export const ChatBox = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
   const form = useForm<z.infer<typeof messageSchema>>({
     defaultValues: { message: "" },
   });
   const { token } = useAuthStore();
 
   const { messages, sendMessage, connect, disconnect, status } = useChatStore();
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   async function onSubmit({ message }: z.infer<typeof messageSchema>) {
     sendMessage(message);
@@ -37,21 +38,33 @@ export const ChatBox = () => {
     return () => disconnect();
   }, [connect, disconnect, token]);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest",
+    });
+  }, [messages]);
+
   const statusText =
     status === "CONNECTED" ? "🟢 Connected" : "🔴 Disconnected";
 
   return (
-    <Card className="max-w-2xl">
+    <Card
+      className={cn("flex h-[88vh] max-w-2xl flex-col", className)}
+      {...props}
+    >
       <CardHeader>
         <CardTitle>Global</CardTitle>
       </CardHeader>
-      <CardContent>
+      <ScrollArea className="flex-grow p-6 pt-0">
         {messages.map((msg, i) => (
           <div className="my-2" key={i}>
             <strong>{msg.name}</strong> {msg.message}
           </div>
         ))}
-      </CardContent>
+        <div ref={messagesEndRef} />
+      </ScrollArea>
       <CardFooter className="pb-1">
         <Form {...form}>
           <form
@@ -81,4 +94,4 @@ export const ChatBox = () => {
       </CardFooter>
     </Card>
   );
-};
+});

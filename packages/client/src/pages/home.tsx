@@ -20,8 +20,7 @@ export function Home() {
     <div className="px-4">
       {user ? (
         <>
-          <h1 className="text-xl">Hello, {user.name}!</h1>
-          <ChatBox />
+          <ChatBox className="mx-auto mt-6" />
         </>
       ) : (
         <Button asChild variant="outline" size="lg" className=" my-6 text-lg">
