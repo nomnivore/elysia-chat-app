@@ -53,6 +53,7 @@ export const ChatBox = forwardRef<
     <Card
       className={cn("flex h-[88vh] max-w-2xl flex-col", className)}
       {...props}
+      ref={ref}
     >
       <CardHeader>
         <CardTitle>Global</CardTitle>
