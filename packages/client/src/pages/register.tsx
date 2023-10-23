@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useEden } from "@/lib/useEden";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,14 +49,14 @@ export function Register() {
   const [nameTaken, setNameTaken] = useState(false);
   const currentUsername = form.watch("username");
 
+  const navigate = useNavigate();
+
   function onSubmit({ username, password }: z.infer<typeof formSchema>) {
     setNameTaken(false);
     api.auth.register.post({ name: username, password }).then(({ status }) => {
       if (status === 201) {
-        console.log("success");
-        // TODO: redirect to login
+        navigate({ to: "/login" });
       } else if (status === 409) {
-        // TODO: display this message
         setNameTaken(true);
       }
     });
