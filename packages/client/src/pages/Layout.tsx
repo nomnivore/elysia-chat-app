@@ -12,7 +12,7 @@ export function Layout() {
           <div className="hidden flex-grow lg:inline"></div>
           <div className="flex flex-grow flex-col items-center">
             <Button variant="link" className="text-2xl font-semibold" asChild>
-              <Link to="/">Elysia Chat</Link>
+              <Link to="/">Mini Chat</Link>
             </Button>
           </div>
           <div className="flex flex-grow items-center justify-end space-x-4">

@@ -29,7 +29,6 @@ export const useAuthStore = create<AuthStore>()(
 
         isAuthed: () => !!get().token,
 
-        // TODO: convert to async/await
         login: async (token) => {
           // fetch user info from api
           const { data: user } = await api.auth.me.get({

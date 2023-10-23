@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/lib/authStore";
 import { Card, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -95,3 +94,4 @@ export const ChatBox = forwardRef<
     </Card>
   );
 });
+ChatBox.displayName = "ChatBox";
