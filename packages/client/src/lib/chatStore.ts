@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { edenApi } from "./useEden";
+import { useAuthStore } from "./authStore";
 
 export type Message = {
   name: string;
@@ -15,7 +16,7 @@ export type ChatStore = {
   sendMessage: (message: string) => void;
   clearMessages: () => void;
 
-  connect: (token: string) => void;
+  connect: () => void;
   disconnect: () => void;
   isConnected: () => boolean;
 };
@@ -24,7 +25,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
   const { api } = edenApi();
   type ChatWS = ReturnType<(typeof api)["chat"]["ws"]["subscribe"]>;
   let ws: ChatWS | null = null;
-  let authToken: string = "";
+  const authStore = useAuthStore;
 
   function onMessage(data: Message) {
     if (data.name === "x") {
@@ -34,7 +35,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       if (data.message === "NOT_AUTHENTICATED") {
-        ws?.send({ accessToken: authToken || "" });
+        ws?.send({ accessToken: authStore.getState().token || "" });
       }
 
       return;
@@ -53,10 +54,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
     clearMessages: () => set({ messages: [] }),
 
-    connect: (token) => {
+    connect: () => {
       if (ws) get().disconnect();
 
-      authToken = token;
       ws = api.chat.ws.subscribe();
 
       ws.on("message", ({ data }) => onMessage(data));

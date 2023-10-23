@@ -21,7 +21,6 @@ export const ChatBox = forwardRef<
   const form = useForm<z.infer<typeof messageSchema>>({
     defaultValues: { message: "" },
   });
-  const { token } = useAuthStore();
 
   const { messages, sendMessage, connect, disconnect, status } = useChatStore();
 
@@ -33,10 +32,10 @@ export const ChatBox = forwardRef<
   }
 
   useEffect(() => {
-    if (token) connect(token);
+    connect();
 
     return () => disconnect();
-  }, [connect, disconnect, token]);
+  }, [connect, disconnect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
