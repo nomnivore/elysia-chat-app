@@ -1,6 +1,4 @@
 import { Elysia, t } from "elysia";
-import { users } from "./db/schema";
-import { eq } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
 import db from "./db";
