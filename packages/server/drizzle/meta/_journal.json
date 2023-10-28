@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1698467100811,
+      "tag": "0000_foamy_nemesis",
+      "breakpoints": true
+    }
+  ]
+}
